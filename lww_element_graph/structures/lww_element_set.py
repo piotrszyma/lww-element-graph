@@ -55,7 +55,7 @@ LWW-Element-Set allows an element to be reinserted after having been removed.
 For more details about this structure, search for "Conflict-free replicated data type".
 """
 import enum
-from typing import Generic, TypeVar
+from typing import Generic, Iterable, TypeVar
 
 from ..utils.timestamp import timestamp_now
 
@@ -185,3 +185,14 @@ class LwwElementSet(Generic[T]):
         )
 
         return merged_set
+
+    def values(self) -> Iterable[T]:
+        """Returns iterator over members of structure."""
+        elements_in_add = self.add_timestamps.keys()
+        for element in elements_in_add:
+            if self.lookup(element):
+                yield element
+
+    def __contains__(self, element: T) -> bool:
+        """Wrapper over lookup to support in operator."""
+        return self.lookup(element)
