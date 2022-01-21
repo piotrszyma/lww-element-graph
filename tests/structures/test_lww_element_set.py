@@ -1,7 +1,7 @@
 from lww_element_graph.structures.lww_element_set import LwwElementSet
 
 
-def test_insert_into_lww_element_set():
+def test_insert():
     # Arrange.
     lww: LwwElementSet[str] = LwwElementSet()
 
@@ -12,7 +12,7 @@ def test_insert_into_lww_element_set():
     assert lww.lookup("abc") is True
 
 
-def test_remove_from_lww_element_set():
+def test_remove():
     # Arrange.
     lww: LwwElementSet[str] = LwwElementSet()
     lww.add("abc")

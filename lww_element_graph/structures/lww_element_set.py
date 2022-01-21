@@ -1,4 +1,6 @@
-"""This module implements LWW Element Set.
+"""This module contains implementation of a LWW-Element-Set.
+
+Notes on LWW-Element-Set from Wikipedia:
 
 # 2P-Set
 
@@ -50,14 +52,15 @@ A LWW-Element-Set can be biased towards adds or removals.
 The advantage of LWW-Element-Set over 2P-Set is that, unlike 2P-Set,
 LWW-Element-Set allows an element to be reinserted after having been removed.
 
+For more details about this structure, search for "Conflict-free replicated data type".
 """
 import enum
 from typing import Generic, TypeVar
 
 from ..utils.timestamp import timestamp_now
 
-
 T = TypeVar("T")
+Timestamp = int
 
 
 class Bias(enum.Enum):
@@ -73,12 +76,17 @@ class LwwElementSet(Generic[T]):
     def __init__(
         self,
         bias: Bias = Bias.ADDS,
-        initial_add_timestamps: dict[T, int] = None,
-        initial_remove_timestamps: dict[T, int] = None,
+        initial_add_timestamps: dict[T, Timestamp] = None,
+        initial_remove_timestamps: dict[T, Timestamp] = None,
     ):
         self.bias = bias
         self.add_timestamps = initial_add_timestamps or {}
         self.remove_timestamps = initial_remove_timestamps or {}
+
+    def __repr__(self):
+        add_elements = set(self.add_timestamps.keys())
+        remove_elements = set(self.remove_timestamps.keys())
+        return f"<LwwElementSet add={add_elements} remove={remove_elements}>"
 
     def lookup(self, element: T) -> bool:
         """Returns boolean indicating if `value` is a member of structure.
@@ -104,7 +112,7 @@ class LwwElementSet(Generic[T]):
         timestamp_remove_set = self.remove_timestamps[element]
 
         if timestamp_add_set == timestamp_remove_set:
-            if Bias.ADDS:
+            if self.bias == Bias.ADDS:
                 return True
             else:
                 return False
@@ -127,29 +135,48 @@ class LwwElementSet(Generic[T]):
         """
         self.remove_timestamps[element] = timestamp_now()
 
+    def _merge_timestamps(
+        self, first_to_merge: dict[T, Timestamp], second_to_merge: dict[T, Timestamp]
+    ) -> dict[T, Timestamp]:
+        """Merges two dicts of elements mapped to timestamps.
+
+        If element is present in only one of dicts, it is placed in merged dict.
+        If element is present in both dicts, the later (bigger) timestamp is placed
+        in merged dict.
+        """
+
+        elements = {*first_to_merge.keys(), *second_to_merge.keys()}
+        merged: dict[T, Timestamp] = {}
+
+        for element in elements:
+            first_timestamp = first_to_merge.get(element)
+            second_timestamp = second_to_merge.get(element)
+
+            if first_timestamp is not None and second_timestamp is not None:
+                merged[element] = max(first_timestamp, second_timestamp)
+            elif second_timestamp is not None:
+                merged[element] = second_timestamp
+            else:
+                assert first_timestamp is not None
+                merged[element] = first_timestamp
+
+        return merged
+
     def merge(self, other: "LwwElementSet[T]") -> "LwwElementSet[T]":
         """Merges two instances of the structure.
 
         Merging two replicas of the LWW-Element-Set consists of taking
         the union of the add sets and the union of the remove sets.
-
-        When timestamps are equal, the "bias" of the LWW-Element-Set
-        comes into play. A LWW-Element-Set can be biased towards adds or
-        removals.
-
-        The advantage of LWW-Element-Set over 2P-Set is that, unlike 2P-Set,
-        LWW-Element-Set allows an element to be reinserted after having been removed.
         """
         assert self.bias == other.bias, "Merged sets should have same bias."
 
-        merged_add_timestamps = {**self.add_timestamps}
-        merged_remove_timestamps = {**self.remove_timestamps}
+        merged_add_timestamps = self._merge_timestamps(
+            self.add_timestamps, other.add_timestamps
+        )
 
-        for element, timestamp in other.add_timestamps.items():
-            merged_add_timestamps[element] = timestamp
-
-        for element, timestamp in other.remove_timestamps.items():
-            merged_remove_timestamps[element] = timestamp
+        merged_remove_timestamps = self._merge_timestamps(
+            self.remove_timestamps, other.remove_timestamps
+        )
 
         merged_set: LwwElementSet[T] = LwwElementSet(
             bias=self.bias,
