@@ -1,4 +1,4 @@
-from typing import TypeVar
+from typing import Optional, TypeVar
 
 from lww_element_graph.structures.lww_element_set import LwwElementSet
 
@@ -12,32 +12,65 @@ _Edge = frozenset[VertexId]
 
 
 class LwwElementGraph:
-    def __init__(self):
-        self._vertexes: LwwElementSet[VertexId] = LwwElementSet()
-        self._edges: LwwElementSet[_Edge] = LwwElementSet()
+    def __init__(
+        self,
+        initial_vertexes: LwwElementSet[VertexId] = None,
+        initial_edges: LwwElementSet[_Edge] = None,
+    ):
+        self.vertexes = initial_vertexes or LwwElementSet()
+        self.edges = initial_edges or LwwElementSet()
+
+    def __repr__(self):
+        return f"<LwwElementGraph {self.vertexes=} {self.edges=}>"
 
     def add_vertex(self, vertex_id: VertexId) -> None:
         """Adds vertex to the structure."""
-        self._vertexes.add(vertex_id)
+        self.vertexes.add(vertex_id)
+
+    def _has_any_edge_connected(self, vertex_id: VertexId) -> bool:
+        return any((vertex_id in edge) for edge in self.edges.values())
+
+    def remove_vertex(self, vertex_id: VertexId) -> None:
+        """Removes vertex from the structure."""
+
+        if self._has_any_edge_connected(vertex_id):
+            raise ValueError("Cannot remove vertex if it has edges connected.")
+
+        self.vertexes.remove(vertex_id)
 
     def has_vertex(self, vertex_id: VertexId) -> bool:
         """Returns boolean indicating if vertex is in structure."""
-        return vertex_id in self._vertexes
+        return vertex_id in self.vertexes
 
     def _build_edge(
         self, first_vertex_id: VertexId, second_vertex_id: VertexId
     ) -> frozenset[VertexId]:
         """Builds an edge - a frozenset with ids of two vertexes."""
+        assert (
+            first_vertex_id != second_vertex_id
+        ), "Loops are not supported by this graph."
         return frozenset((first_vertex_id, second_vertex_id))
 
     def add_edge(self, first_vertex_id: VertexId, second_vertex_id: VertexId) -> None:
         """Adds edge to the structure."""
-        self._edges.add(self._build_edge(first_vertex_id, second_vertex_id))
+        # TODO(szyma): Maybe add support for loops (edge connected to same vertex)?
+        self.edges.add(self._build_edge(first_vertex_id, second_vertex_id))
+
+    def remove_edge(
+        self, first_vertex_id: VertexId, second_vertex_id: VertexId
+    ) -> None:
+        """Removes edge from the structure."""
+        # TODO(szyma): Maybe add support for loops (edge connected to same vertex)?
+        self.edges.remove(self._build_edge(first_vertex_id, second_vertex_id))
+
+    def has_edge(self, first_vertex_id: VertexId, second_vertex_id: VertexId) -> bool:
+        """Returns boolean indicating if graph has edge connecting vertexes."""
+        return frozenset({first_vertex_id, second_vertex_id}) in self.edges
 
     def get_adjacent_vertexes(self, vertex_id: VertexId) -> frozenset[VertexId]:
         """Returns a frozenset of vertexes adjacent to the vertex."""
         adjacent_vertexes = []
-        for edge in self._edges.values():
+        for edge in self.edges.values():
             assert len(edge) == 2, "Edges should be of length 2."
 
             if vertex_id not in edge:
@@ -49,7 +82,46 @@ class LwwElementGraph:
 
     def find_any_path(
         self, first_vertex_id: VertexId, second_vertex_id: VertexId
-    ) -> tuple[VertexId]:
-        """Returns a path between two vertexes."""
-        # TODO: Implement path finding - BFS from two vertexes.
-        return tuple()
+    ) -> Optional[tuple[VertexId, ...]]:
+        """Finds a path between two vertexes using BFS."""
+        if first_vertex_id == second_vertex_id:
+            return (first_vertex_id,)
+
+        visited: set[VertexId] = set()
+
+        to_visit = [first_vertex_id]
+
+        while to_visit:
+            current_vertex = to_visit.pop()
+
+            # Mark current vertex as visited.
+            visited.add(current_vertex)
+
+            for adjacent_vertex in self.get_adjacent_vertexes(current_vertex):
+                if adjacent_vertex in visited:
+                    # Skip adjacent that is already visited.
+                    continue
+
+                if adjacent_vertex == second_vertex_id:
+                    return tuple()  # Found a path.
+
+                to_visit.append(adjacent_vertex)
+
+        return None
+
+    def merge(self, other: "LwwElementGraph") -> "LwwElementGraph":
+        """Merges two graphs."""
+        merged_vertexes = self.vertexes.merge(other.vertexes)
+        merged_edges = self.edges.merge(other.edges)
+
+        for edge in merged_edges.values():
+            first_vertex_id, second_vertex_id = edge
+            if (
+                first_vertex_id not in merged_vertexes
+                or second_vertex_id not in merged_vertexes
+            ):
+                merged_edges.remove(edge)
+
+        return LwwElementGraph(
+            initial_edges=merged_edges, initial_vertexes=merged_vertexes
+        )

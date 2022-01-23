@@ -84,9 +84,8 @@ class LwwElementSet(Generic[T]):
         self.remove_timestamps = initial_remove_timestamps or {}
 
     def __repr__(self):
-        add_elements = set(self.add_timestamps.keys())
-        remove_elements = set(self.remove_timestamps.keys())
-        return f"<LwwElementSet add={add_elements} remove={remove_elements}>"
+        values = set(self.values())
+        return f"<LwwElementSet {values=}>"
 
     def lookup(self, element: T) -> bool:
         """Returns boolean indicating if `value` is a member of structure.
