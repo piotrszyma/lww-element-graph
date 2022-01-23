@@ -1,6 +1,6 @@
 from typing import Optional, TypeVar
 
-from lww_element_graph.structures.lww_element_set import LwwElementSet
+from lww_element_graph.structures.lww_element_set import Bias, LwwElementSet
 
 T = TypeVar("T")
 
@@ -16,9 +16,10 @@ class LwwElementGraph:
         self,
         initial_vertexes: LwwElementSet[VertexId] = None,
         initial_edges: LwwElementSet[_Edge] = None,
+        bias = Bias.ADDS,
     ):
-        self.vertexes = initial_vertexes or LwwElementSet()
-        self.edges = initial_edges or LwwElementSet()
+        self.vertexes = initial_vertexes or LwwElementSet(bias=bias)
+        self.edges = initial_edges or LwwElementSet(bias=bias)
 
     def __repr__(self):
         return f"<LwwElementGraph {self.vertexes=} {self.edges=}>"
@@ -88,6 +89,9 @@ class LwwElementGraph:
             return (first_vertex_id,)
 
         visited: set[VertexId] = set()
+        paths_from_first: dict[VertexId, tuple[VertexId, ...]] = {
+            first_vertex_id: (first_vertex_id,)
+        }
 
         to_visit = [first_vertex_id]
 
@@ -103,8 +107,13 @@ class LwwElementGraph:
                     continue
 
                 if adjacent_vertex == second_vertex_id:
-                    return tuple()  # Found a path.
+                    # If the adjacent vertex is target vertex, we found the path.
+                    return (*paths_from_first[current_vertex], adjacent_vertex)
 
+                paths_from_first[adjacent_vertex] = (
+                    *paths_from_first[current_vertex],
+                    adjacent_vertex,
+                )
                 to_visit.append(adjacent_vertex)
 
         return None
