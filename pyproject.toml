@@ -14,6 +14,7 @@ pytest-watch = "^4.2.0"
 flake8 = "^4.0.1"
 black = "^21.12b0"
 freezegun = "^1.1.0"
+pytest-cov = "^3.0.0"
 
 [tool.pyright]
 
