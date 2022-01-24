@@ -1,7 +1,4 @@
-from freezegun import freeze_time
-
 from lww_element_graph.structures.lww_element_graph import LwwElementGraph
-from lww_element_graph.structures.lww_element_set import Bias
 
 
 def test_later_first_vertex_value_takes_precedence():
