@@ -87,7 +87,7 @@ def test_check_edge_is_not_in_graph():
     assert graph.has_edge("1", "2") is False
 
 
-def test_get_adjacent_vertexes():
+def test_get_adjacent_vertices():
     # Arrange.
     graph = LwwElementGraph()
     graph.add_vertex("1")
@@ -103,7 +103,7 @@ def test_get_adjacent_vertexes():
     graph.add_edge("2", "6")
 
     # Act.
-    adjacent_vertexes = graph.get_adjacent_vertexes("1")
+    adjacent_vertices = graph.get_adjacent_vertices("1")
 
     # Assert.
-    assert adjacent_vertexes == frozenset({"2", "3", "4"})
+    assert adjacent_vertices == frozenset({"2", "3", "4"})

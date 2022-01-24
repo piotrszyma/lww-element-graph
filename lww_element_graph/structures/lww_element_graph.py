@@ -1,5 +1,7 @@
 from typing import Generic, Optional, TypeVar
 
+from more_itertools import first
+
 from lww_element_graph.structures.lww_element_set import Bias, LwwElementSet
 
 T = TypeVar("T")
@@ -11,42 +13,50 @@ VertexId = str
 _Edge = frozenset[VertexId]
 
 
+class GraphOperationError(Exception):
+    pass
+
+
 class LwwElementGraph(Generic[T]):
     def __init__(
         self,
-        initial_vertexes: LwwElementSet[VertexId] = None,
+        initial_vertices: LwwElementSet[VertexId] = None,
         initial_edges: LwwElementSet[_Edge] = None,
-        initial_vertexes_values: dict[VertexId, T] = None,
+        initial_vertices_values: dict[VertexId, T] = None,
         bias=Bias.ADDS,
     ):
-        self.vertexes = initial_vertexes or LwwElementSet(bias=bias)
-        self.vertexes_values: dict[VertexId, T] = initial_vertexes_values or {}
+        self.vertices = initial_vertices or LwwElementSet(bias=bias)
+        self.vertices_values: dict[VertexId, T] = initial_vertices_values or {}
 
         self.edges = initial_edges or LwwElementSet(bias=bias)
 
     def __repr__(self):
-        return f"<LwwElementGraph {self.vertexes=} {self.edges=}>"
+        return f"<LwwElementGraph {self.vertices=} {self.edges=}>"
 
     def add_vertex(self, vertex_id: VertexId) -> None:
         """Adds vertex to the graph."""
-        self.vertexes.add(vertex_id)
+        if self.has_vertex(vertex_id):
+            raise GraphOperationError(f"Vertex with id {vertex_id} already in graph.")
+        self.vertices.add(vertex_id)
 
     def _assert_vertex_in_graph(self, vertex_id: VertexId) -> None:
-        """Raises ValueError if vertex not found in graph."""
+        """Raises GraphOperationError if vertex not found in graph."""
         if not self.has_vertex(vertex_id):
-            raise ValueError(f"{vertex_id=} not found in graph")
+            raise GraphOperationError(f"{vertex_id=} not found in graph")
 
-    def set_vertex_value(self, vertex_id, value: T) -> None:
+    def set_vertex_value(self, vertex_id: VertexId, value: T) -> None:
         """Updates value associated with a vertex."""
         self._assert_vertex_in_graph(vertex_id)
-        self.vertexes_values[vertex_id] = value
+        self.vertices.add(vertex_id)  # Simulate add - it will update timestamp.
+        self.vertices_values[vertex_id] = value
 
     def get_vertex_value(self, vertex_id: VertexId) -> Optional[T]:
         """Returns value associated with a vertex, None if no value associated."""
         self._assert_vertex_in_graph(vertex_id)
-        return self.vertexes_values.get(vertex_id)
+        return self.vertices_values.get(vertex_id)
 
     def _has_any_edge_connected(self, vertex_id: VertexId) -> bool:
+        self._assert_vertex_in_graph(vertex_id)
         return any((vertex_id in edge) for edge in self.edges.values())
 
     def remove_vertex(self, vertex_id: VertexId) -> None:
@@ -54,40 +64,47 @@ class LwwElementGraph(Generic[T]):
         self._assert_vertex_in_graph(vertex_id)
 
         if self._has_any_edge_connected(vertex_id):
-            raise ValueError("Cannot remove vertex if it has edges connected.")
+            raise GraphOperationError("Cannot remove vertex if it has edges connected.")
 
-        self.vertexes.remove(vertex_id)
+        self.vertices.remove(vertex_id)
 
     def has_vertex(self, vertex_id: VertexId) -> bool:
         """Returns boolean indicating if vertex is in structure."""
-        return vertex_id in self.vertexes
+        return vertex_id in self.vertices
 
     def _build_edge(
         self, first_vertex_id: VertexId, second_vertex_id: VertexId
     ) -> frozenset[VertexId]:
-        """Builds an edge - a frozenset with ids of two vertexes."""
-        assert (
-            first_vertex_id != second_vertex_id
-        ), "Loops are not supported by this graph."
+        """Builds an edge - a frozenset with ids of two vertices."""
+        if first_vertex_id == second_vertex_id:
+            raise GraphOperationError("Graph does not support loops.")
         return frozenset((first_vertex_id, second_vertex_id))
 
     def add_edge(self, first_vertex_id: VertexId, second_vertex_id: VertexId) -> None:
         """Adds edge to the structure."""
-        self.edges.add(self._build_edge(first_vertex_id, second_vertex_id))
+        edge = self._build_edge(first_vertex_id, second_vertex_id)
+        if edge in self.edges:
+            raise GraphOperationError(f"Edge {edge} already in graph.")
+        self.edges.add(edge)
 
     def remove_edge(
         self, first_vertex_id: VertexId, second_vertex_id: VertexId
     ) -> None:
         """Removes edge from the structure."""
-        self.edges.remove(self._build_edge(first_vertex_id, second_vertex_id))
+        edge = self._build_edge(first_vertex_id, second_vertex_id)
+        if edge not in self.edges:
+            raise GraphOperationError(f"Edge {edge} not in graph.")
+        self.edges.remove(edge)
 
     def has_edge(self, first_vertex_id: VertexId, second_vertex_id: VertexId) -> bool:
-        """Returns boolean indicating if graph has edge connecting vertexes."""
+        """Returns boolean indicating if graph has edge connecting vertices."""
         return frozenset({first_vertex_id, second_vertex_id}) in self.edges
 
-    def get_adjacent_vertexes(self, vertex_id: VertexId) -> frozenset[VertexId]:
-        """Returns a frozenset of vertexes adjacent to the vertex."""
-        adjacent_vertexes = []
+    def get_adjacent_vertices(self, vertex_id: VertexId) -> frozenset[VertexId]:
+        """Returns a frozenset of vertices adjacent to the vertex."""
+        self._assert_vertex_in_graph(vertex_id)
+
+        adjacent_vertices = []
         for edge in self.edges.values():
             assert len(edge) == 2, "Edges should be of length 2."
 
@@ -95,13 +112,16 @@ class LwwElementGraph(Generic[T]):
                 continue
 
             (adjacent_vertex_id,) = edge - {vertex_id}
-            adjacent_vertexes.append(adjacent_vertex_id)
-        return frozenset(adjacent_vertexes)
+            adjacent_vertices.append(adjacent_vertex_id)
+        return frozenset(adjacent_vertices)
 
     def find_any_path(
         self, first_vertex_id: VertexId, second_vertex_id: VertexId
     ) -> Optional[tuple[VertexId, ...]]:
-        """Finds a path between two vertexes using BFS."""
+        """Finds a path between two vertices using BFS."""
+        self._assert_vertex_in_graph(first_vertex_id)
+        self._assert_vertex_in_graph(second_vertex_id)
+
         if first_vertex_id == second_vertex_id:
             return (first_vertex_id,)
 
@@ -118,7 +138,7 @@ class LwwElementGraph(Generic[T]):
             # Mark current vertex as visited.
             visited.add(current_vertex)
 
-            for adjacent_vertex in self.get_adjacent_vertexes(current_vertex):
+            for adjacent_vertex in self.get_adjacent_vertices(current_vertex):
                 if adjacent_vertex in visited:
                     # Skip adjacent that is already visited.
                     continue
@@ -135,52 +155,60 @@ class LwwElementGraph(Generic[T]):
 
         return None
 
-    def _merge_vertexes_values(
-        self, merged_vertexes: LwwElementSet[VertexId], other: "LwwElementGraph"
+    def _merge_vertices_values(
+        self, merged_vertices: LwwElementSet[VertexId], other: "LwwElementGraph"
     ) -> dict[VertexId, T]:
-        self_values = self.vertexes_values
-        other_values = other.vertexes_values
+        self_values = self.vertices_values
+        other_values = other.vertices_values
         merged_values: dict[VertexId, T] = {}
 
-        for vertex_id in merged_vertexes.values():
+        for vertex_id in merged_vertices.values():
             if vertex_id in self_values and vertex_id in other_values:
-                timestamp = merged_vertexes.add_timestamps[vertex_id]
-                if timestamp == self.vertexes.add_timestamps[vertex_id]:
-                    merged_values[vertex_id] = self.vertexes_values[vertex_id]
+                timestamp = merged_vertices.add_timestamps[vertex_id]
+                if timestamp == self.vertices.add_timestamps[vertex_id]:
+                    merged_values[vertex_id] = self.vertices_values[vertex_id]
                 else:
-                    merged_values[vertex_id] = other.vertexes_values[vertex_id]
+                    merged_values[vertex_id] = other.vertices_values[vertex_id]
             elif vertex_id in self_values:
-                merged_values[vertex_id] = self.vertexes_values[vertex_id]
+                merged_values[vertex_id] = self.vertices_values[vertex_id]
             elif vertex_id in other_values:
-                merged_values[vertex_id] = other.vertexes_values[vertex_id]
+                merged_values[vertex_id] = other.vertices_values[vertex_id]
 
         return merged_values
 
     def _remove_orphant_edges(
         self,
         merged_edges: LwwElementSet[_Edge],
-        merged_vertexes: LwwElementSet[VertexId],
+        merged_vertices: LwwElementSet[VertexId],
     ) -> None:
         for edge in merged_edges.values():
             first_vertex_id, second_vertex_id = edge
             if (
-                first_vertex_id not in merged_vertexes
-                or second_vertex_id not in merged_vertexes
+                first_vertex_id not in merged_vertices
+                or second_vertex_id not in merged_vertices
             ):
                 merged_edges.remove(edge)
 
     def merge(self, other: "LwwElementGraph") -> "LwwElementGraph":
-        """Merges two graphs."""
-        merged_vertexes = self.vertexes.merge(other.vertexes)
+        """Merges two graphs.
+
+        It performs the merge with the following steps:
+
+        1. merges vertices & edges using LwwElementSet.
+        2. merges vertices values given verties timestamps from merged LwwElementSet
+        3. removes edges that are missing vertices after mege
+
+        """
+        merged_vertices = self.vertices.merge(other.vertices)
         merged_edges = self.edges.merge(other.edges)
 
-        merged_values: dict[VertexId, T] = self._merge_vertexes_values(
-            merged_vertexes, other
+        merged_values: dict[VertexId, T] = self._merge_vertices_values(
+            merged_vertices, other
         )
-        self._remove_orphant_edges(merged_edges, merged_vertexes)
+        self._remove_orphant_edges(merged_edges, merged_vertices)
 
         return LwwElementGraph(
             initial_edges=merged_edges,
-            initial_vertexes=merged_vertexes,
-            initial_vertexes_values=merged_values,
+            initial_vertices=merged_vertices,
+            initial_vertices_values=merged_values,
         )
