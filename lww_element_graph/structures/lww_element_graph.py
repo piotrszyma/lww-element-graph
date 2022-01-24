@@ -1,8 +1,26 @@
 from typing import Generic, Optional, TypeVar
 
 from lww_element_graph.structures.lww_element_set import Bias, LwwElementSet
+from typing import overload, Iterable, Callable, TypeVar, Protocol, Any, Union
 
-T = TypeVar("T")
+_T = TypeVar("_T")
+_T1 = TypeVar("_T1")
+_T2 = TypeVar("_T2")
+
+
+class SupportsDunderLT(Protocol):
+    def __lt__(self, __other: Any) -> Any:
+        ...
+
+
+class SupportsDunderGT(Protocol):
+    def __gt__(self, __other: Any) -> Any:
+        ...
+
+
+SupportsRichComparison = Union[SupportsDunderLT, SupportsDunderGT]
+
+T = TypeVar("T", bound=SupportsRichComparison)
 
 VertexId = str
 
@@ -170,7 +188,16 @@ class LwwElementGraph(Generic[T]):
         for vertex_id in merged_vertices.values():
             if vertex_id in self_values and vertex_id in other_values:
                 timestamp = merged_vertices.add_timestamps[vertex_id]
-                if timestamp == self.vertices.add_timestamps[vertex_id]:
+                self_timestamp = self.vertices.add_timestamps[vertex_id]
+                other_timestamp = other.vertices.add_timestamps[vertex_id]
+                if timestamp == self_timestamp == other_timestamp:
+                    # Edge case: different replicas assigned different value
+                    # in the exact same moment - take max of those two values.
+                    merged_values[vertex_id] = max(
+                        self.vertices_values[vertex_id],
+                        other.vertices_values[vertex_id],
+                    )
+                elif timestamp == self_timestamp:
                     merged_values[vertex_id] = self.vertices_values[vertex_id]
                 else:
                     merged_values[vertex_id] = other.vertices_values[vertex_id]
