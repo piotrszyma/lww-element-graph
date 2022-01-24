@@ -55,8 +55,8 @@ def test_merge_remove_previously_added():
 
 def test_bias_towards_adds_should_be_present_in_merged():
     # Arrange.
-    first_replica = LwwElementGraph(bias=Bias.ADDS)
-    second_replica = LwwElementGraph(bias=Bias.ADDS)
+    first_replica = LwwElementGraph(_bias=Bias.ADDS)
+    second_replica = LwwElementGraph(_bias=Bias.ADDS)
 
     with freeze_time() as frozen_time:
         # Element was present only in first.
@@ -79,8 +79,8 @@ def test_bias_towards_adds_should_be_present_in_merged():
 
 def test_bias_towards_removes_should_not_be_present_in_merged():
     # Arrange.
-    first_replica = LwwElementGraph(bias=Bias.REMOVES)
-    second_replica = LwwElementGraph(bias=Bias.REMOVES)
+    first_replica = LwwElementGraph(_bias=Bias.REMOVES)
+    second_replica = LwwElementGraph(_bias=Bias.REMOVES)
 
     with freeze_time() as frozen_time:
         # Element was present only in first.

@@ -18,15 +18,15 @@ class GraphOperationError(Exception):
 class LwwElementGraph(Generic[T]):
     def __init__(
         self,
-        initial_vertices: LwwElementSet[VertexId] = None,
-        initial_edges: LwwElementSet[_Edge] = None,
-        initial_vertices_values: dict[VertexId, T] = None,
-        bias=Bias.ADDS,
+        _bias=Bias.ADDS,
+        _initial_vertices: LwwElementSet[VertexId] = None,
+        _initial_edges: LwwElementSet[_Edge] = None,
+        _initial_vertices_values: dict[VertexId, T] = None,
     ):
-        self.vertices = initial_vertices or LwwElementSet(bias=bias)
-        self.vertices_values: dict[VertexId, T] = initial_vertices_values or {}
+        self.vertices = _initial_vertices or LwwElementSet(bias=_bias)
+        self.vertices_values: dict[VertexId, T] = _initial_vertices_values or {}
 
-        self.edges = initial_edges or LwwElementSet(bias=bias)
+        self.edges = _initial_edges or LwwElementSet(bias=_bias)
 
     def __repr__(self):
         return f"<LwwElementGraph {self.vertices=} {self.edges=}>"
@@ -206,7 +206,7 @@ class LwwElementGraph(Generic[T]):
         self._remove_orphant_edges(merged_edges, merged_vertices)
 
         return LwwElementGraph(
-            initial_edges=merged_edges,
-            initial_vertices=merged_vertices,
-            initial_vertices_values=merged_values,
+            _initial_edges=merged_edges,
+            _initial_vertices=merged_vertices,
+            _initial_vertices_values=merged_values,
         )
