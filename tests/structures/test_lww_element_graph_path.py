@@ -42,6 +42,7 @@ def test_path():
     # Assert.
     assert path == ("1", "2", "3", "4")
 
+
 def test_no_path():
     # Arrange.
     graph = LwwElementGraph()

@@ -1,7 +1,5 @@
 from typing import Generic, Optional, TypeVar
 
-from more_itertools import first
-
 from lww_element_graph.structures.lww_element_set import Bias, LwwElementSet
 
 T = TypeVar("T")
