@@ -31,6 +31,13 @@ class LwwElementGraph(Generic[T]):
     def __repr__(self):
         return f"<LwwElementGraph {self.vertices=} {self.edges=}>"
 
+    def __eq__(self, other: "LwwElementGraph[T]") -> bool:
+        return (
+            frozenset(self.vertices.values()) == frozenset(other.vertices.values())
+            and frozenset(self.edges.values()) == frozenset(other.edges.values())
+            and self.vertices_values == other.vertices_values
+        )
+
     def add_vertex(self, vertex_id: VertexId) -> None:
         """Adds vertex to the graph."""
         if self.has_vertex(vertex_id):
