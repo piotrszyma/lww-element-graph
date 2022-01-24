@@ -194,7 +194,7 @@ class LwwElementGraph(Generic[T]):
 
         1. merges vertices & edges using LwwElementSet.
         2. merges vertices values given verties timestamps from merged LwwElementSet
-        3. removes edges that are missing vertices after mege
+        3. removes edges that are missing vertices after merge
 
         """
         merged_vertices = self.vertices.merge(other.vertices)
