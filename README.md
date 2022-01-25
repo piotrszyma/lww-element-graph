@@ -14,7 +14,7 @@ poetry install
 poetry run pytest
 ```
 
-## Run coverage (html)
+## Run coverage
 ```
 poetry run pytest --cov=lww_element_graph tests/
 ```

@@ -8,13 +8,15 @@ def test_later_add_takes_precendence():
 
     first_replica.add_vertex("1")
     first_replica.remove_vertex("1")
-    second_replica.add_vertex("1")
+    second_replica.add_vertex("1")  # Latest operation - add.
 
     # Act.
     merged_replica = first_replica.merge(second_replica)
 
     # Assert.
-    assert merged_replica.has_vertex("1") is True
+    assert (
+        merged_replica.has_vertex("1") is True
+    ), "Add was last, element should be present."
 
 
 def test_later_remove_takes_precendence():
@@ -24,16 +26,19 @@ def test_later_remove_takes_precendence():
 
     first_replica.add_vertex("1")
     second_replica.add_vertex("1")
-    second_replica.remove_vertex("1")
+    second_replica.remove_vertex("1")  # Latest operation - remove.
 
     # Act.
     merged_replica = first_replica.merge(second_replica)
 
     # Assert.
-    assert merged_replica.has_vertex("1") is False
+    assert (
+        merged_replica.has_vertex("1") is False
+    ), "Remove was last, element should not be present."
 
 
 def test_merge_after_vertex_removal_removes_connected_edges():
+    """When merge results in vertex missing, all connected edges should be dropped to."""
     # Arrange.
     first_replica = LwwElementGraph()
     first_replica.add_vertex("1")
