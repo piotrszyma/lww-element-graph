@@ -82,6 +82,6 @@ def test_merge_vertices_values_set_in_the_same_time_replica_which_is_merged_wins
         first_replica.set_vertex_value("1", 456)
         second_replica.set_vertex_value("1", 123)
 
-    # Act & Assert.
+    # Act & assert.
     assert first_replica.merge(second_replica).get_vertex_value("1") == 456
     assert second_replica.merge(first_replica).get_vertex_value("1") == 456

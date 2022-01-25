@@ -1,4 +1,8 @@
-from lww_element_graph.structures.lww_element_graph import LwwElementGraph
+import pytest
+from lww_element_graph.structures.lww_element_graph import (
+    GraphOperationError,
+    LwwElementGraph,
+)
 
 
 def test_insert_vertex():
@@ -107,3 +111,62 @@ def test_get_adjacent_vertices():
 
     # Assert.
     assert adjacent_vertices == frozenset({"2", "3", "4"})
+
+
+def test_adds_same_vertex_twice_raises_error():
+    # Arrange.
+    graph = LwwElementGraph()
+    graph.add_vertex("1")
+
+    # Act & Assert.
+    with pytest.raises(GraphOperationError, match="already in graph."):
+        graph.add_vertex("1")
+
+
+def test_remove_vertex_with_connected_edges_raises_error():
+    graph = LwwElementGraph()
+    graph.add_vertex("1")
+    graph.add_vertex("2")
+    graph.add_edge("1", "2")
+
+    # Act & Assert.
+    with pytest.raises(GraphOperationError, match="has edges connected."):
+        graph.remove_vertex("1")
+
+
+def test_remove_nonexistent_vertex_raises_error():
+    graph = LwwElementGraph()
+
+    # Act & Assert.
+    with pytest.raises(GraphOperationError, match="not found in graph"):
+        graph.remove_vertex("1")
+
+
+def test_add_loop_raises_error():
+    graph = LwwElementGraph()
+    graph.add_vertex("1")
+
+    # Act & Assert.
+    with pytest.raises(GraphOperationError, match="does not support loops"):
+        graph.add_edge("1", "1")
+
+
+def test_remove_nonexistent_edge_raises_error():
+    graph = LwwElementGraph()
+    graph.add_vertex("1")
+    graph.add_vertex("2")
+
+    # Act & Assert.
+    with pytest.raises(GraphOperationError, match="not found in graph"):
+        graph.remove_edge("1", "2")
+
+
+def test_add_existing_edge_raises_error():
+    graph = LwwElementGraph()
+    graph.add_vertex("1")
+    graph.add_vertex("2")
+    graph.add_edge("1", "2")
+
+    # Act & Assert.
+    with pytest.raises(GraphOperationError, match="already in graph"):
+        graph.add_edge("1", "2")

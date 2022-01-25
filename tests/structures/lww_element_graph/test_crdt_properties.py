@@ -22,7 +22,7 @@ def test_merge_is_commutative():
     first_replica.set_vertex_value("1", 456)
     second_replica.set_vertex_value("2", 123)
 
-    # Act & Assert.
+    # Act & assert.
     assert first_replica.merge(second_replica) == second_replica.merge(first_replica)
 
 
@@ -39,7 +39,7 @@ def test_merge_is_idempotent():
     first_replica.add_vertex("2")
     first_replica.add_edge("1", "2")
 
-    # Act & Assert.
+    # Act & assert.
     assert first_replica.merge(first_replica) == first_replica
 
 

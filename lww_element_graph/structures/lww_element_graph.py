@@ -100,7 +100,7 @@ class LwwElementGraph(Generic[T]):
         """Removes edge from the structure."""
         edge = self._build_edge(first_vertex_id, second_vertex_id)
         if edge not in self.edges:
-            raise GraphOperationError(f"Edge {edge} not in graph.")
+            raise GraphOperationError(f"Edge {edge} not found in graph.")
         self.edges.remove(edge)
 
     def has_edge(self, first_vertex_id: VertexId, second_vertex_id: VertexId) -> bool:
