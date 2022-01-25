@@ -223,10 +223,10 @@ class LwwElementGraph(Generic[T]):
             ):
                 merged_edges.remove(edge)
 
-    def _assertbias_equals(self, other: "LwwElementGraph") -> None:
-        expectedbias = self.vertices.bias
-        vertices_samebias = self.vertices.bias == other.vertices.bias == expectedbias
-        edges_samebias = self.edges.bias == other.edges.bias == expectedbias
+    def _assert_bias_equals(self, other: "LwwElementGraph") -> None:
+        expected_bias = self.vertices.bias
+        vertices_samebias = self.vertices.bias == other.vertices.bias == expected_bias
+        edges_samebias = self.edges.bias == other.edges.bias == expected_bias
         if not vertices_samebias or not edges_samebias:
             raise GraphOperationError("Each Graph should have same bias.")
 
@@ -239,7 +239,7 @@ class LwwElementGraph(Generic[T]):
         2. merges vertices values given verties timestamps from merged LwwElementSet
         3. removes edges which connect vertices removed during merge
         """
-        self._assertbias_equals(other)
+        self._assert_bias_equals(other)
 
         merged_vertices = self.vertices.merge(other.vertices)
         merged_edges = self.edges.merge(other.edges)
