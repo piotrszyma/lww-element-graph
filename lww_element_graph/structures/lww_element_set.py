@@ -75,13 +75,13 @@ class LwwElementSet(Generic[T]):
 
     def __init__(
         self,
-        bias: Bias = Bias.ADDS,
-        initial_add_timestamps: dict[T, Timestamp] = None,
-        initial_remove_timestamps: dict[T, Timestamp] = None,
+        _bias: Bias = Bias.ADDS,
+        _initial_add_timestamps: dict[T, Timestamp] = None,
+        _initial_remove_timestamps: dict[T, Timestamp] = None,
     ):
-        self.bias = bias
-        self.add_timestamps = initial_add_timestamps or {}
-        self.remove_timestamps = initial_remove_timestamps or {}
+        self.bias = _bias
+        self.add_timestamps = _initial_add_timestamps or {}
+        self.remove_timestamps = _initial_remove_timestamps or {}
 
     def __repr__(self):
         values = set(self.values())
@@ -178,9 +178,9 @@ class LwwElementSet(Generic[T]):
         )
 
         merged_set: LwwElementSet[T] = LwwElementSet(
-            bias=self.bias,
-            initial_add_timestamps=merged_add_timestamps,
-            initial_remove_timestamps=merged_remove_timestamps,
+            _bias=self.bias,
+            _initial_add_timestamps=merged_add_timestamps,
+            _initial_remove_timestamps=merged_remove_timestamps,
         )
 
         return merged_set

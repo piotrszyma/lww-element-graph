@@ -25,10 +25,10 @@ class LwwElementGraph(Generic[T]):
         _initial_edges: LwwElementSet[_Edge] = None,
         _initial_vertices_values: dict[VertexId, T] = None,
     ):
-        self.vertices = _initial_vertices or LwwElementSet(bias=_bias)
+        self.vertices = _initial_vertices or LwwElementSet(_bias=_bias)
         self.vertices_values: dict[VertexId, T] = _initial_vertices_values or {}
 
-        self.edges = _initial_edges or LwwElementSet(bias=_bias)
+        self.edges = _initial_edges or LwwElementSet(_bias=_bias)
 
     def __repr__(self):
         return f"<LwwElementGraph {self.vertices=} {self.edges=}>"
@@ -205,6 +205,14 @@ class LwwElementGraph(Generic[T]):
             ):
                 merged_edges.remove(edge)
 
+    def _assert_bias_equals(self, other: "LwwElementGraph") -> None:
+        expected_bias = self.vertices.bias
+        vertices_same_bias = self.vertices.bias == other.vertices.bias == expected_bias
+        edges_same_bias = self.edges.bias == other.edges.bias == expected_bias
+        if not vertices_same_bias or not edges_same_bias:
+            raise GraphOperationError("Each Graph should have same bias.")
+
+
     def merge(self, other: "LwwElementGraph") -> "LwwElementGraph":
         """Merges two graphs.
 
@@ -215,6 +223,8 @@ class LwwElementGraph(Generic[T]):
         3. removes edges that are missing vertices after merge
 
         """
+        self._assert_bias_equals(other)
+
         merged_vertices = self.vertices.merge(other.vertices)
         merged_edges = self.edges.merge(other.edges)
 
