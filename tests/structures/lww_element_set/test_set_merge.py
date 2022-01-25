@@ -41,8 +41,8 @@ def test_merge_remove_previously_added():
 
 def test_later_add_timestamp_takes_precendence():
     # Arrange.
-    first_lww: LwwElementSet[str] = LwwElementSet(_bias=Bias.REMOVES)
-    second_lww: LwwElementSet[str] = LwwElementSet(_bias=Bias.REMOVES)
+    first_lww: LwwElementSet[str] = LwwElementSet(bias=Bias.REMOVES)
+    second_lww: LwwElementSet[str] = LwwElementSet(bias=Bias.REMOVES)
 
     first_lww.add("abc")
     first_lww.remove("abc")
@@ -57,8 +57,8 @@ def test_later_add_timestamp_takes_precendence():
 
 def test_later_remove_timestamp_takes_precendence():
     # Arrange.
-    first_lww: LwwElementSet[str] = LwwElementSet(_bias=Bias.REMOVES)
-    second_lww: LwwElementSet[str] = LwwElementSet(_bias=Bias.REMOVES)
+    first_lww: LwwElementSet[str] = LwwElementSet(bias=Bias.REMOVES)
+    second_lww: LwwElementSet[str] = LwwElementSet(bias=Bias.REMOVES)
 
     first_lww.add("abc")
     second_lww.add("abc")

@@ -25,15 +25,15 @@ class GraphOperationError(Exception):
 class LwwElementGraph(Generic[T]):
     def __init__(
         self,
-        _bias=Bias.ADDS,
+        bias=Bias.ADDS,
         _initial_vertices: LwwElementSet[VertexId] = None,
         _initial_edges: LwwElementSet[_Edge] = None,
         _initial_vertices_values: dict[VertexId, T] = None,
     ):
-        self.vertices = _initial_vertices or LwwElementSet(_bias=_bias)
+        self.vertices = _initial_vertices or LwwElementSet(bias=bias)
         self.vertices_values: dict[VertexId, T] = _initial_vertices_values or {}
 
-        self.edges = _initial_edges or LwwElementSet(_bias=_bias)
+        self.edges = _initial_edges or LwwElementSet(bias=bias)
 
     def __repr__(self):
         return f"<LwwElementGraph {self.vertices=} {self.edges=}>"
@@ -210,11 +210,11 @@ class LwwElementGraph(Generic[T]):
             ):
                 merged_edges.remove(edge)
 
-    def _assert_bias_equals(self, other: "LwwElementGraph") -> None:
-        expected_bias = self.vertices.bias
-        vertices_same_bias = self.vertices.bias == other.vertices.bias == expected_bias
-        edges_same_bias = self.edges.bias == other.edges.bias == expected_bias
-        if not vertices_same_bias or not edges_same_bias:
+    def _assertbias_equals(self, other: "LwwElementGraph") -> None:
+        expectedbias = self.vertices.bias
+        vertices_samebias = self.vertices.bias == other.vertices.bias == expectedbias
+        edges_samebias = self.edges.bias == other.edges.bias == expectedbias
+        if not vertices_samebias or not edges_samebias:
             raise GraphOperationError("Each Graph should have same bias.")
 
     def merge(self, other: "LwwElementGraph") -> "LwwElementGraph":
@@ -226,7 +226,7 @@ class LwwElementGraph(Generic[T]):
         2. merges vertices values given verties timestamps from merged LwwElementSet
         3. removes edges which connect vertices removed during merge
         """
-        self._assert_bias_equals(other)
+        self._assertbias_equals(other)
 
         merged_vertices = self.vertices.merge(other.vertices)
         merged_edges = self.edges.merge(other.edges)
