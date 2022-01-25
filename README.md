@@ -13,13 +13,13 @@ An implementation of a last write wins, state-based conflict-free replicated dat
 ```python
 from lww_element_graph.structures.lww_element_graph import LwwElementGraph
 
-first_replica = LwwElementGraph()
+first_replica: LwwElementGraph[str] = LwwElementGraph()
 first_replica.add_vertex("1")  # Add a vertex.
 first_replica.add_vertex("2")
 first_replica.add_edge("1", "2")  # Connect vertices with edge.
 first_replica.set_vertex_value("1", "foo")  # Assign a value to a vertex.
 
-second_replica = LwwElementGraph()
+second_replica: LwwElementGraph[str] = LwwElementGraph()
 second_replica.add_vertex("3")  # Add a vertex.
 
 merged_replica = first_replica.merge(second_replica)  # Merge two replicas.
