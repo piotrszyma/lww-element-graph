@@ -186,7 +186,7 @@ class LwwElementSet(Generic[T]):
         return merged_set
 
     def values(self) -> Iterable[T]:
-        """Returns iterator over members of structure."""
+        """Returns iterable over members of structure."""
         elements_in_add = self.add_timestamps.keys()
         for element in elements_in_add:
             if self.lookup(element):
