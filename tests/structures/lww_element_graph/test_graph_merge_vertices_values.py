@@ -69,12 +69,7 @@ def test_merge_vertices_values_set_in_the_same_time_replica_which_is_merged_wins
 
     with freeze_time() as frozen_time:
         first_replica.add_vertex("1")
-        first_replica.add_vertex("2")
-        first_replica.add_edge("1", "2")
-
         second_replica.add_vertex("1")
-        second_replica.add_vertex("2")
-        second_replica.add_edge("1", "2")
 
         frozen_time.tick()
 
