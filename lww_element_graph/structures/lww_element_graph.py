@@ -1,24 +1,8 @@
 from typing import Generic, Optional, TypeVar
 
 from lww_element_graph.structures.lww_element_set import Bias, LwwElementSet
-from typing import overload, Iterable, Callable, TypeVar, Protocol, Any, Union
+from lww_element_graph.types import SupportsRichComparison
 
-_T = TypeVar("_T")
-_T1 = TypeVar("_T1")
-_T2 = TypeVar("_T2")
-
-
-class SupportsDunderLT(Protocol):
-    def __lt__(self, __other: Any) -> Any:
-        ...
-
-
-class SupportsDunderGT(Protocol):
-    def __gt__(self, __other: Any) -> Any:
-        ...
-
-
-SupportsRichComparison = Union[SupportsDunderLT, SupportsDunderGT]
 
 T = TypeVar("T", bound=SupportsRichComparison)
 
