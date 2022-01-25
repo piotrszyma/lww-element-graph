@@ -30,6 +30,10 @@ For more usage examples, please check `tests/` directory.
 
 ## Installation
 
+To be able to use the module, you don't need any external dependencies.
+To be able to run tests & coverage, you need to install third party packages.
+This project uses [poetry](https://python-poetry.org/docs/https://python-poetry.org/docs/#installation) for package management.
+
 ```
 poetry install
 ```
