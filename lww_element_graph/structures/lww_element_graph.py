@@ -25,6 +25,17 @@ class GraphOperationError(Exception):
 
 
 class LwwElementGraph(Generic[T]):
+    """A Graph that is a CRDT.
+
+    For details check module description.
+
+    Attributes:
+        bias: An enum indicating if graph should be biased towards adds or removals.
+        _initial_vertices: not part of a public API, used by the merge function.
+        _initial_edges: not part of a public API, used by the merge function.
+        _initial_vertices_values: not part of a public API, used by the merge function.
+    """
+
     def __init__(
         self,
         bias=Bias.ADDS,
