@@ -19,7 +19,7 @@ _Edge = frozenset[VertexId]
 
 
 class GraphOperationError(Exception):
-    pass
+    """Thrown when unexpected graph operation occurs."""
 
 
 class LwwElementGraph(Generic[T]):
