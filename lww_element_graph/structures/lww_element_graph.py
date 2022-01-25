@@ -1,7 +1,9 @@
 """This module contains implementation of a LWW-Element-Graph.
 
-A Graph that stores edges and vertices in a LwwElementSet,
-implements merge operation- is a CRDT.
+LWW-Element-Graph is a graph that stores edges and vertices in a LwwElementSet,
+implements merge operation to merge two graphs. This structure is a CRDT.
+
+For more details check lww_element_set.py.
 """
 from typing import Generic, Optional, TypeVar
 
