@@ -1,3 +1,8 @@
+"""This module contains implementation of a LWW-Element-Graph.
+
+A Graph that stores edges and vertices in a LwwElementSet,
+implements merge operation- is a CRDT.
+"""
 from typing import Generic, Optional, TypeVar
 
 from lww_element_graph.structures.lww_element_set import Bias, LwwElementSet
@@ -163,7 +168,7 @@ class LwwElementGraph(Generic[T]):
         return None
 
     def _merge_vertices_values(
-        self, merged_vertices: LwwElementSet[VertexId], other: "LwwElementGraph"
+        self, other: "LwwElementGraph", merged_vertices: LwwElementSet[VertexId]
     ) -> dict[VertexId, T]:
         self_values = self.vertices_values
         other_values = other.vertices_values
@@ -212,7 +217,6 @@ class LwwElementGraph(Generic[T]):
         if not vertices_same_bias or not edges_same_bias:
             raise GraphOperationError("Each Graph should have same bias.")
 
-
     def merge(self, other: "LwwElementGraph") -> "LwwElementGraph":
         """Merges two graphs.
 
@@ -220,8 +224,7 @@ class LwwElementGraph(Generic[T]):
 
         1. merges vertices & edges using LwwElementSet.
         2. merges vertices values given verties timestamps from merged LwwElementSet
-        3. removes edges that are missing vertices after merge
-
+        3. removes edges which connect vertices removed during merge
         """
         self._assert_bias_equals(other)
 
@@ -229,7 +232,7 @@ class LwwElementGraph(Generic[T]):
         merged_edges = self.edges.merge(other.edges)
 
         merged_values: dict[VertexId, T] = self._merge_vertices_values(
-            merged_vertices, other
+            other, merged_vertices
         )
         self._remove_orphant_edges(merged_edges, merged_vertices)
 
