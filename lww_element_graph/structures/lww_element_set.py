@@ -193,5 +193,5 @@ class LwwElementSet(Generic[T]):
                 yield element
 
     def __contains__(self, element: T) -> bool:
-        """Wrapper over lookup to support in operator."""
+        """Wrapper over lookup to support `in` operator."""
         return self.lookup(element)
