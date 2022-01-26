@@ -10,7 +10,6 @@ from typing import Generic, Optional, TypeVar
 from lww_element_graph.structures.lww_element_set import Bias, LwwElementSet
 from lww_element_graph.types import SupportsRichComparison
 
-
 T = TypeVar("T", bound=SupportsRichComparison)
 
 VertexId = str
@@ -31,6 +30,11 @@ class LwwElementGraph(Generic[T]):
 
     Attributes:
         bias: An enum indicating if graph should be biased towards adds or removals.
+
+        When add/remove occurred in two replicas simultanously:
+        - bias towards adds means that element will remain in the merged graph
+        - bias towards removes means that element will not be in the merged graph
+
         _initial_vertices: not part of a public API, used by the merge function.
         _initial_edges: not part of a public API, used by the merge function.
         _initial_vertices_values: not part of a public API, used by the merge function.
@@ -85,7 +89,7 @@ class LwwElementGraph(Generic[T]):
         return any((vertex_id in edge) for edge in self.edges.values())
 
     def remove_vertex(self, vertex_id: VertexId) -> None:
-        """Removes vertex from the structure."""
+        """Removes vertex from the graph."""
         self._assert_vertex_in_graph(vertex_id)
 
         if self._has_any_edge_connected(vertex_id):
@@ -94,7 +98,7 @@ class LwwElementGraph(Generic[T]):
         self.vertices.remove(vertex_id)
 
     def has_vertex(self, vertex_id: VertexId) -> bool:
-        """Returns boolean indicating if vertex is in structure."""
+        """Returns boolean indicating if vertex is in graph."""
         return vertex_id in self.vertices
 
     def _build_edge(
@@ -106,7 +110,7 @@ class LwwElementGraph(Generic[T]):
         return frozenset((first_vertex_id, second_vertex_id))
 
     def add_edge(self, first_vertex_id: VertexId, second_vertex_id: VertexId) -> None:
-        """Adds edge to the structure."""
+        """Adds edge to the graph."""
         edge = self._build_edge(first_vertex_id, second_vertex_id)
         if edge in self.edges:
             raise GraphOperationError(f"Edge {edge} already in graph.")
@@ -115,7 +119,7 @@ class LwwElementGraph(Generic[T]):
     def remove_edge(
         self, first_vertex_id: VertexId, second_vertex_id: VertexId
     ) -> None:
-        """Removes edge from the structure."""
+        """Removes edge from the graph."""
         edge = self._build_edge(first_vertex_id, second_vertex_id)
         if edge not in self.edges:
             raise GraphOperationError(f"Edge {edge} not found in graph.")
@@ -183,6 +187,7 @@ class LwwElementGraph(Generic[T]):
     def _merge_vertices_values(
         self, other: "LwwElementGraph", merged_vertices: LwwElementSet[VertexId]
     ) -> dict[VertexId, T]:
+        """Merge using value from graph with timestamp same as one in merged graph."""
         self_values = self.vertices_values
         other_values = other.vertices_values
         merged_values: dict[VertexId, T] = {}
@@ -193,7 +198,7 @@ class LwwElementGraph(Generic[T]):
                 self_timestamp = self.vertices.add_timestamps[vertex_id]
                 other_timestamp = other.vertices.add_timestamps[vertex_id]
                 if timestamp == self_timestamp == other_timestamp:
-                    # Edge case: different replicas assigned different value
+                    # Edge case: different replicas assigned value
                     # in the exact same moment - take max of those two values.
                     merged_values[vertex_id] = max(
                         self.vertices_values[vertex_id],

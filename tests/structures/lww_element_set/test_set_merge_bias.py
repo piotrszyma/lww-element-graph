@@ -1,6 +1,5 @@
-from gc import freeze
-
 from freezegun import freeze_time
+
 from lww_element_graph.structures.lww_element_set import Bias, LwwElementSet
 
 
@@ -23,7 +22,10 @@ def test_merge_bias_removes():
     merged_lww = first_lww.merge(second_lww)
 
     # Assert.
-    assert merged_lww.lookup("abc") is False, "Element should not be present if bias = REMOVES"
+    assert (
+        merged_lww.lookup("abc") is False
+    ), "Element should not be present if bias = REMOVES"
+
 
 def test_merge_bias_adds():
     # Arrange.
@@ -43,5 +45,4 @@ def test_merge_bias_adds():
     merged_lww = first_lww.merge(second_lww)
 
     # Assert.
-    assert merged_lww.lookup("abc") is True, "Element should be present if bias = ADDS"
-
+    assert merged_lww.lookup("abc") is True

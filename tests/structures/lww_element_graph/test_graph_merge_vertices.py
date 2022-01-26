@@ -38,7 +38,7 @@ def test_later_remove_takes_precendence():
 
 
 def test_merge_after_vertex_removal_removes_connected_edges():
-    """When merge results in vertex missing, all connected edges should be dropped to."""
+    """When vertex is dropped in merge, all its edges should be dropped."""
     # Arrange.
     first_replica = LwwElementGraph()
     first_replica.add_vertex("1")
