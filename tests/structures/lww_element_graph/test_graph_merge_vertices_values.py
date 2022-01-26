@@ -23,7 +23,7 @@ def test_merge_vertices_values():
     assert merged_replica.get_vertex_value("2") == 123
 
 
-def test_later_first_vertex_value_takes_precedence():
+def test_vertex_value_set_later_takes_precedence():
     # Arrange.
     first_replica: LwwElementGraph[int] = LwwElementGraph()
     second_replica: LwwElementGraph[int] = LwwElementGraph()

@@ -11,14 +11,16 @@ def test_merge_edges():
     first_replica.add_vertex("3")
     first_replica.add_vertex("4")
     first_replica.add_edge("1", "2")
+    first_replica.add_edge("1", "3")
     first_replica.add_edge("2", "3")
     first_replica.add_edge("2", "4")
+
     second_replica.add_vertex("1")
     second_replica.add_vertex("2")
     second_replica.add_vertex("3")
     second_replica.add_vertex("4")
-    first_replica.add_edge("1", "4")
-    first_replica.add_edge("1", "3")
+    second_replica.add_edge("1", "4")
+    second_replica.add_edge("1", "3")
 
     # Act.
     merged_replica = first_replica.merge(second_replica)

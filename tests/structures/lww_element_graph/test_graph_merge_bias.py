@@ -4,7 +4,7 @@ from lww_element_graph.structures.lww_element_graph import LwwElementGraph
 from lww_element_graph.structures.lww_element_set import Bias
 
 
-def test_bias_towards_adds_should_be_present_in_merged():
+def test_bias_towards_adds_element_added_and_removed_should_be_present_in_merged():
     """Fails if element will be present in merged graph.
 
     Element simultaniously added/removed - present after
@@ -33,7 +33,7 @@ def test_bias_towards_adds_should_be_present_in_merged():
     assert merged_replica.has_vertex("1") is True
 
 
-def test_bias_towards_removes_should_not_be_present_in_merged():
+def test_bias_towards_removes_element_added_and_removed_should_not_be_present_merged():
     """Fails if element will be present in merged graph.
 
     Element simultaniously added/removed - should not be present

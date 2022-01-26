@@ -1,4 +1,5 @@
 import pytest
+
 from lww_element_graph.structures.lww_element_graph import (
     GraphOperationError,
     LwwElementGraph,
@@ -113,7 +114,7 @@ def test_get_adjacent_vertices():
     assert adjacent_vertices == frozenset({"2", "3", "4"})
 
 
-def test_adds_same_vertex_twice_raises_error():
+def test_add_same_vertex_twice_raises_error():
     # Arrange.
     graph = LwwElementGraph()
     graph.add_vertex("1")
