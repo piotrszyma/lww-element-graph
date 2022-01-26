@@ -33,7 +33,7 @@ def test_bias_towards_adds_element_added_and_removed_should_be_present_in_merged
     assert merged_replica.has_vertex("1") is True
 
 
-def test_bias_towards_removes_element_added_and_removed_should_not_be_present_merged():
+def test_bias_towards_removes_element_added_and_removed_should_not_be_in_merged():
     """Fails if element will be present in merged graph.
 
     Element simultaniously added/removed - should not be present
