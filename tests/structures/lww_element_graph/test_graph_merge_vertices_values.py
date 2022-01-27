@@ -61,7 +61,7 @@ def test_later_second_vertex_value_takes_precedence():
     ), "Value set later should take recedence."
 
 
-def test_merge_vertices_values_set_in_the_same_time_replica_which_is_merged_wins():
+def test_merge_vertices_values_set_in_the_same_time_replica_with_higher_value_wins():
     """Edge case - two replicas assigned different value at the same time."""
     # Arrange.
     first_replica: LwwElementGraph[int] = LwwElementGraph()
